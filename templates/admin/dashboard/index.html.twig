@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DashboardController!{% endblock %}
+
+{% block body_class %}admin-page{% endblock %}
+
+{% block body %}
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="admin-brand">
+            <div class="admin-brand-icon"><i class="fa-solid fa-shield-halved"></i></div>
+            <div>
+                <h2>CTED Admin</h2>
+                <p>Operations Dashboard</p>
+            </div>
+        </div>
+        <nav class="admin-nav">
+            <a href="#" class="active">Dashboard</a>
+            <a href="#">Inventory</a>
+            <a href="#">Transactions</a>
+            <a href="#">Logs</a>
+            <a href="#">Reports</a>
+        </nav>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div>
+                <p class="admin-eyebrow">Overview</p>
+                <h1>Administration Panel</h1>
+            </div>
+            <button class="admin-action">New Request</button>
+        </header>
+
+        <section class="admin-cards">
+            <article class="admin-card">
+                <h3>Pending Requests</h3>
+                <p>24</p>
+            </article>
+            <article class="admin-card">
+                <h3>Approved Today</h3>
+                <p>12</p>
+            </article>
+            <article class="admin-card">
+                <h3>Inventory Alerts</h3>
+                <p>3</p>
+            </article>
+        </section>
+    </main>
+</div>
+{% endblock %}
