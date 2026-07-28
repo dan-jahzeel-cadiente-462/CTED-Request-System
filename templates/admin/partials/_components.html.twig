@@ -1,0 +1,7 @@
+{% macro stat_card(label, value, description) %}
+    <article class="rounded-3xl bg-white p-6 shadow-sm">
+        <p class="text-sm uppercase tracking-[0.24em] text-slate-500">{{ label }}</p>
+        <p class="mt-4 text-3xl font-semibold text-slate-900">{{ value }}</p>
+        <p class="mt-2 text-sm text-slate-500">{{ description }}</p>
+    </article>
+{% endmacro %}

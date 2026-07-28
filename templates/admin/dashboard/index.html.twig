@@ -1,49 +1,65 @@
-{% extends 'base.html.twig' %}
+{% extends 'admin/base.html.twig' %}
+{% from 'admin/partials/_components.html.twig' import stat_card %}
 
-{% block title %}Hello DashboardController!{% endblock %}
+{% block admin_title %}Dashboard{% endblock %}
 
-{% block body_class %}admin-page{% endblock %}
+{% block admin_heading %}Dashboard{% endblock %}
 
-{% block body %}
-<div class="admin-shell">
-    <aside class="admin-sidebar">
-        <div class="admin-brand ">
-            <div class="admin-brand-icon flex items-center justify-center rounded-full shadow-inner overflow-hidden">
-                <img src="{{ asset('images/CTED.png') }}" alt="CTED Logo" class="w-16 h-16 object-contain">
+{% block page_actions %}
+    {% include 'admin/partials/page_actions.html.twig' %}
+{% endblock %}
+
+{% block admin_body %}
+<div class="space-y-6">
+    <section class="grid gap-6 xl:grid-cols-[1.8fr_1fr]">
+        <article class="rounded-3xl bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-700 p-8 text-white shadow-xl shadow-indigo-500/10">
+            <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.3em] text-slate-300">Welcome back</p>
+                    <h2 class="mt-3 text-4xl font-semibold">Your admin summary</h2>
+                </div>
+                <div class="inline-flex rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100">Live dashboard</div>
             </div>
-            <div>
-                <h2>CTED Admin</h2>
-                <p>Operations Dashboard</p>
+            <div class="mt-8 grid gap-4 sm:grid-cols-3">
+                <div class="rounded-3xl bg-white/10 p-5">
+                    <p class="text-sm text-slate-300">Pending requests</p>
+                    <p class="mt-3 text-3xl font-semibold">24</p>
+                </div>
+                <div class="rounded-3xl bg-white/10 p-5">
+                    <p class="text-sm text-slate-300">Approved today</p>
+                    <p class="mt-3 text-3xl font-semibold">12</p>
+                </div>
+                <div class="rounded-3xl bg-white/10 p-5">
+                    <p class="text-sm text-slate-300">Alerts</p>
+                    <p class="mt-3 text-3xl font-semibold">3</p>
+                </div>
             </div>
+        </article>
+
+        <div class="grid gap-4">
+            <article class="rounded-3xl bg-white p-6 shadow-sm">
+                <p class="text-sm uppercase tracking-[0.28em] text-slate-500">Today's activity</p>
+                <h3 class="mt-4 text-xl font-semibold text-slate-900">Requests and queue trends</h3>
+                <p class="mt-3 text-slate-600">Quick access to the latest request stats and workflow status.</p>
+            </article>
+            <article class="rounded-3xl bg-white p-6 shadow-sm">
+                <p class="text-sm uppercase tracking-[0.28em] text-slate-500">Admin tools</p>
+                <div class="mt-5 space-y-3">
+                    <div class="rounded-3xl bg-slate-950 p-4 text-slate-100">
+                        <p class="text-sm text-slate-300">Manage user roles, approvals, and request flows.</p>
+                    </div>
+                    <div class="rounded-3xl bg-slate-950 p-4 text-slate-100">
+                        <p class="text-sm text-slate-300">Review request details and respond faster.</p>
+                    </div>
+                </div>
+            </article>
         </div>
-        <nav class="admin-nav">
-            <a href="#" class="active">Dashboard</a>
-        </nav>
-    </aside>
+    </section>
 
-    <main class="admin-main">
-        <header class="admin-topbar">
-            <div>
-                <p class="admin-eyebrow">Overview</p>
-                <h1>Administration Panel</h1>
-            </div>
-            <button class="admin-action">New Request</button>
-        </header>
-
-        <section class="admin-cards">
-            <article class="admin-card">
-                <h3>Pending Requests</h3>
-                <p>24</p>
-            </article>
-            <article class="admin-card">
-                <h3>Approved Today</h3>
-                <p>12</p>
-            </article>
-            <article class="admin-card">
-                <h3>Inventory Alerts</h3>
-                <p>3</p>
-            </article>
-        </section>
-    </main>
+    <section class="grid gap-4 md:grid-cols-3">
+        {{ stat_card('Pending', '14', 'Requests waiting for review.') }}
+        {{ stat_card('Processing', '8', 'Requests currently being processed.') }}
+        {{ stat_card('Completed', '18', 'Requests completed today.') }}
+    </section>
 </div>
 {% endblock %}

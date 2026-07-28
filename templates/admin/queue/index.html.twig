@@ -1,0 +1,47 @@
+{% extends 'admin/base.html.twig' %}
+{% from 'admin/partials/_components.html.twig' import stat_card %}
+
+{% block admin_title %}Queue{% endblock %}
+
+{% block admin_heading %}Queue Management{% endblock %}
+
+{% block page_actions %}
+    {% include 'admin/partials/page_actions.html.twig' %}
+{% endblock %}
+
+{% block admin_body %}
+<div class="space-y-6">
+    <section class="grid gap-4 sm:grid-cols-3">
+        {{ stat_card('Open requests', '24', 'Requests waiting in the queue.') }}
+        {{ stat_card('In progress', '11', 'Requests currently being handled.') }}
+        {{ stat_card('Completed', '9', 'Requests finished today.') }}
+    </section>
+
+    <section class="grid gap-4 lg:grid-cols-2">
+        <article class="rounded-3xl bg-white p-6 shadow-sm">
+            <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm uppercase tracking-[0.28em] text-slate-500">Queue overview</p>
+                    <h2 class="mt-2 text-2xl font-semibold text-slate-900">Active queue details</h2>
+                </div>
+                <span class="rounded-full bg-emerald-100 px-4 py-2 text-sm font-semibold text-emerald-700">Live updates</span>
+            </div>
+            <p class="mt-5 text-slate-600">Monitor the request flow, see which items are pending, and assign resources faster.</p>
+        </article>
+
+        <article class="rounded-3xl bg-white p-6 shadow-sm">
+            <p class="text-sm uppercase tracking-[0.28em] text-slate-500">Queue metrics</p>
+            <div class="mt-5 space-y-4">
+                <div class="rounded-3xl bg-slate-100 p-4">
+                    <p class="text-sm text-slate-500">Average wait time</p>
+                    <p class="mt-2 text-xl font-semibold text-slate-900">1h 12m</p>
+                </div>
+                <div class="rounded-3xl bg-slate-100 p-4">
+                    <p class="text-sm text-slate-500">Highest priority items</p>
+                    <p class="mt-2 text-xl font-semibold text-slate-900">5</p>
+                </div>
+            </div>
+        </article>
+    </section>
+</div>
+{% endblock %}
