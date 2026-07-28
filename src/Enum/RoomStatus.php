@@ -2,27 +2,24 @@
 
 namespace App\Enum;
 
-enum AssetStatus: string 
+enum RoomStatus: string 
 {
     case AVAILABLE = "Available";
-    case RESERVED = "Reserved";
+    case RESERVED = "Reserved/In use";
     case MAINTENANCE = "Maintenance";
-    case DECOMMISSIONED = "Decommissioned";
     
     public const ALL = [
         'Available',
-        'Reserved',
+        'Reserved/In use',
         'Maintenance',
-        'Decommissioned'
     ];
 
     public function label(): string
     {
         return match ($this) {
             self::AVAILABLE => 'Available',
-            self::RESERVED => 'Reserved',
+            self::RESERVED => 'Reserved/In use',
             self::MAINTENANCE => 'Maintenance',
-            self::DECOMMISSIONED => 'Decommissioned',
         };
     }
 }

@@ -28,7 +28,7 @@
 				<!-- Student ID Field -->
 				<div>
 					<label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">Student ID</label>
-					<input type="text" placeholder="" class="w-full pb-2 border-b border-slate-300 focus:border-blue-500 focus:outline-none text-slate-700 bg-transparent transition-colors">
+					<input id="studentId" type="text" placeholder="" class="w-full pb-2 border-b border-slate-300 focus:border-blue-500 focus:outline-none text-slate-700 bg-transparent transition-colors">
 				</div>
 
 				<!-- Full Name Field -->
@@ -48,8 +48,8 @@
 							Program/Year
 						</label>
 						<div class="relative group">
-							<select class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b-2 border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
-								{% for case in enum('App\\Enum\\Program').cases %}
+							<select class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
+								{% for case in programOptions %}
 									<option value="{{ case.value }}" class="text-slate-800 bg-white py-1">{{ case.label() }}</option>
 								{% endfor %}
 							</select>
@@ -66,7 +66,7 @@
 						Common Request
 					</label>
 					<div class="relative group">
-						<select class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b-2 border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
+						<select id="common-request-select" class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b-2 border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
 							{% for case in enum('App\\Enum\\CommonRequest').cases %}
 								<option value="{{ case.value }}" class="text-slate-800 bg-white py-1">{{ case.label() }}</option>
 							{% endfor %}
@@ -77,8 +77,11 @@
 					</div>
 				</div>
 
+				{% include 'kiosk/partials/checkboxes/device_request.html.twig' with { devices: deviceOptions } %}
+				{% include 'kiosk/partials/checkboxes/cert_of_employment.html.twig' with { employmentCert: employmentCertOptions } %}
+
 				<!-- Submit Button Area -->
-				<div class="pt-2 flex justify-end">
+				<div class="flex justify-end">
 					<button class="font-bold inline-block cursor-pointer items-center justify-center rounded-xl border-[1.58px] border-zinc-600 bg-zinc-950 px-5 py-3 font-medium text-slate-200 shadow-md transition-all duration-300 hover:[transform:translateY(-.335rem)] hover:shadow-xl">
 						Submit
 					</button>
@@ -86,5 +89,5 @@
 
 			</form>
 
-		</div>
+				<script src="{{ asset('scripts/student-kiosk.js') }}"></script>
 	{% endblock %}

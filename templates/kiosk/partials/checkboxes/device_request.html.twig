@@ -1,0 +1,30 @@
+<div id="device-request-section" class="hidden space-y-4">
+    <div class="text-sm font-semibold text-slate-700">Requested Devices</div>
+    <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
+        {% for case in devices %}
+            <label class="inline-flex items-center rounded-xl px-3 py-3 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 gap-4">
+                <input
+                    type="checkbox"
+                    name="devices[]"
+                    value="{{ case.value }}"
+                    id="device-{{ case.name|lower }}"
+                    class="mr-3 h-5 w-5 rounded border-slate-300 text-slate-800 focus:ring-slate-800"
+                    {% if case.value == 'Others, please specify' %}id="device-other" data-other-checkbox="true"{% endif %}
+                />
+                <span>{{ case.label() }}</span>
+            </label>
+        {% endfor %}
+    </div>
+
+    <div id="device-other-text-wrapper" class="hidden mt-2">
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1" for="device-other-text">
+            Please specify
+        </label>
+        <input
+            type="text"
+            id="device-other-text"
+            name="device_other"
+            placeholder="Describe other equipment"
+            class="w-full pb-2 border-b border-slate-300 focus:border-blue-500 focus:outline-none text-slate-700 bg-transparent transition-colors">
+    </div>
+</div>

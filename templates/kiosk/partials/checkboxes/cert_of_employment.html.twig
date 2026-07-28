@@ -1,0 +1,16 @@
+<div id="employment-cert-section" class="hidden space-y-4">
+    <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
+        {% for case in employmentCert %}
+            <label class="inline-flex items-center rounded-xl px-3 py-3 text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 gap-4">
+                <input
+                    type="radio"
+                    name="employment_cert"
+                    value="{{ case.value }}"
+                    id="employment-cert-{{ case.name|lower }}"
+                    class="mr-3 h-5 w-5 rounded border-slate-300 text-slate-800 focus:ring-slate-800"
+                />
+                <span>{{ case.label() }}</span>
+            </label>
+        {% endfor %}
+    </div>
+</div>
