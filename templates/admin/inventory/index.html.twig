@@ -1,0 +1,67 @@
+{% extends 'admin/base.html.twig' %}
+{% from 'admin/partials/_components.html.twig' import stat_card %}
+
+{% block admin_title %}Inventory{% endblock %}
+
+{% block admin_heading %}Inventory Management{% endblock %}
+
+{% block page_actions %}
+	{% include 'admin/partials/page_actions.html.twig' %}
+{% endblock %}
+
+{% block admin_body %}
+	<div class="space-y-6">
+		<section class="grid gap-4 lg:grid-cols-1">
+			<article class="rounded-lg bg-white p-6 shadow-sm">
+				<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+					<div>
+						<p class="text-sm uppercase tracking-[0.28em] text-slate-500">Inventory overview</p>
+						<h2 class="mt-2 text-2xl font-semibold text-slate-900">Manage stock and requests</h2>
+					</div>
+					<a href="#" class="inline-flex items-center rounded-lg bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+						Add request
+					</a>
+				</div>
+				<div class="mt-6 overflow-hidden rounded-lg border border-slate-200 bg-slate-50 shadow-sm">
+					<div class="w-full overflow-x-auto">
+						<table class="min-w-full whitespace-no-wrap">
+							<thead>
+								<tr class="text-xs font-semibold tracking-wide text-left text-gray-500 uppercase border-b bg-white">
+									<th class="px-4 py-3">Room</th>
+									<th class="px-4 py-3"></th>
+									<th class="px-4 py-3">Status</th>
+									<th class="px-4 py-3">Date</th>
+								</tr>
+							</thead>
+							<tbody class="bg-white divide-y">
+								<tr class="text-gray-700">
+									<td class="px-4 py-4">
+										<div class="flex items-center text-sm">
+                                            <!--
+											<div class="relative hidden w-10 h-10 mr-3 rounded-full md:block">
+												<img class="object-cover w-full h-full rounded-full" src="https://images.unsplash.com/flagged/photo-1570612861542-284f4c12e75f?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=200&fit=max&ixid=eyJhcHBfaWQiOjE3Nzg0fQ" alt="" loading="lazy"/>
+												<div class="absolute inset-0 rounded-full shadow-inner" aria-hidden="true"></div>
+											</div>
+                                            -->
+											<div>
+												<p class="font-semibold">ACCREDITATION ROOM</p>
+												<p class="text-xs text-slate-500">10x Developer</p>
+											</div>
+										</div>
+									</td>
+									<td class="px-4 py-4 text-sm">$ 863.45</td>
+									<td class="px-4 py-4 text-xs">
+										<span class="inline-flex items-center px-2 py-1 font-semibold leading-tight text-green-700 bg-green-100 rounded-full">
+											Approved
+										</span>
+									</td>
+									<td class="px-4 py-4 text-sm">6/10/2020</td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</article>
+		</section>
+	</div>
+{% endblock %}

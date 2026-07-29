@@ -1,7 +1,40 @@
 {% macro stat_card(label, value, description) %}
-    <article class="rounded-3xl bg-white p-6 shadow-sm">
+    <article 
+        class="rounded-lg bg-white p-6 shadow-sm"
+        x-data="{ 
+            current: 0, 
+            target: {{ value }},
+            duration: 1000,
+            init() {
+                let start = 0;
+                let startTime = null;
+                
+                const animate = (currentTime) => {
+                    if (!startTime) startTime = currentTime;
+                    let progress = Math.min((currentTime - startTime) / this.duration, 1);
+                    this.current = Math.floor(progress * this.target);
+                    
+                    if (progress < 1) {
+                        requestAnimationFrame(animate);
+                    } else {
+                        this.current = this.target;
+                    }
+                };
+                
+                // Trigger animation when the element enters the viewport
+                const observer = new IntersectionObserver((entries) => {
+                    if (entries[0].isIntersecting) {
+                        requestAnimationFrame(animate);
+                        observer.disconnect();
+                    }
+                }, { threshold: 0.5 });
+                
+                observer.observe(this.$el);
+            }
+        }"
+    >
         <p class="text-sm uppercase tracking-[0.24em] text-slate-500">{{ label }}</p>
-        <p class="mt-4 text-3xl font-semibold text-slate-900">{{ value }}</p>
+        <p class="mt-4 text-3xl font-semibold text-slate-900" x-text="current">{{ value }}</p>
         <p class="mt-2 text-sm text-slate-500">{{ description }}</p>
     </article>
 {% endmacro %}
