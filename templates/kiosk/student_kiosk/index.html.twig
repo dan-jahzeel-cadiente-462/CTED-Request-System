@@ -66,7 +66,7 @@
 						Common Request
 					</label>
 					<div class="relative group">
-						<select id="common-request-select" class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b-2 border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
+						<select id="common-request-select" class="w-full pb-2 pr-6 text-sm font-medium text-slate-700 bg-transparent border-b border-slate-200 appearance-none cursor-pointer transition-colors hover:border-slate-400 focus:border-blue-600 focus:outline-none">
 							{% for case in enum('App\\Enum\\CommonRequest').cases %}
 								<option value="{{ case.value }}" class="text-slate-800 bg-white py-1">{{ case.label() }}</option>
 							{% endfor %}
@@ -79,6 +79,7 @@
 
 				{% include 'kiosk/partials/checkboxes/device_request.html.twig' with { devices: deviceOptions } %}
 				{% include 'kiosk/partials/checkboxes/cert_of_employment.html.twig' with { employmentCert: employmentCertOptions } %}
+				{% include 'kiosk/partials/inputs/other_purposes.html.twig' with { commonRequest: commonRequestOptions } %}
 
 				<!-- Submit Button Area -->
 				<div class="flex justify-end">

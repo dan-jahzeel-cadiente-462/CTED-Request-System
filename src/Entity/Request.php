@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use App\Repository\RequestRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Uid\Uuid;
+use Symfony\Component\Uid\UuidV7;
 
 #[ORM\Entity(repositoryClass: RequestRepository::class)]
 class Request
@@ -11,7 +13,7 @@ class Request
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?Uuid $id = null;
 
     #[ORM\Column(length: 9)]
     private ?string $student_id = null;
@@ -33,6 +35,7 @@ class Request
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $time_out = null;
+    
 
     public function getId(): ?int
     {

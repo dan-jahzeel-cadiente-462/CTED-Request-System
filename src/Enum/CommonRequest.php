@@ -11,6 +11,7 @@ enum CommonRequest: string
     case REQUEST_TO_USE_CTED_FACILITIES = "Request to Use CTED Rooms/Halls";
     case REQUEST_TO_USE_DEVICES = "Request to Use Devices";
     case CERTIFICATE_OF_EMPLOYMENT = "Certificate of Employment";
+    case OTHER = "Other";
 
     public const ALL = [
         'Clearance',
@@ -19,7 +20,8 @@ enum CommonRequest: string
         'Certified True Copy',
         'Request to Use CTED Rooms/Halls',
         'Request to Use Devices',
-        'Certificate of Employment'
+        'Certificate of Employment',
+        'Other'
     ];
 
     public function label(): string
@@ -32,6 +34,7 @@ enum CommonRequest: string
             self::REQUEST_TO_USE_CTED_FACILITIES => 'Request to Use CTED Rooms/Halls',
             self::REQUEST_TO_USE_DEVICES => 'Request to Use Devices',
             self::CERTIFICATE_OF_EMPLOYMENT => 'Certificate of Employment',
+            self::OTHER => 'Other',
         };
     }
 }

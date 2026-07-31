@@ -13,13 +13,43 @@ document.addEventListener('DOMContentLoaded', () => {
     const employmentOtherTextWrapper = document.getElementById('employment-cert-other-text-wrapper');
     const employmentOtherTextInput = document.getElementById('employment-cert-other-text');
 
+    // Other common requests
+    const otherCommonRequestSection = document.getElementById('other-requirement-text-section');
+    const otherCommonRequestTextWrapper = document.getElementById('other-requirement-text-wrapper');
+    const otherCommonRequestInput = document.getElementById('other-requirement-text');
+
+
     if (!commonRequestSelect) {
         return;
     }
 
     const devicesRequestValue = commonRequestSelect.dataset.devicesRequestValue || 'Request to Use Devices';
     const employmentCertRequestValue = commonRequestSelect.dataset.employmentCertRequestValue || 'Certificate of Employment';
+    const otherCommonRequestValue = commonRequestSelect.dataset.otherCommonRequestValue || 'Other';
 
+    const updateOtherRequirementSection = () => {
+        if (commonRequestSelect.value === otherCommonRequestValue) {
+            otherCommonRequestSection?.classList.remove('hidden');
+            otherCommonRequestTextWrapper?.classList.remove('hidden');
+        } else {
+            otherCommonRequestSection?.classList.add('hidden');
+            otherCommonRequestTextWrapper?.classList.add('hidden');
+            otherCommonRequestInput.value = "";
+        }
+    }
+
+    commonRequestSelect.addEventListener('change', updateOtherRequirementSection);
+    updateOtherRequirementSection();
+
+
+    /**
+     * If the user selects "Certificate of Employment" in the dropdown, then the options would be either 'Local' or
+     * 'International as in the radio.
+     * FUNCTIONS
+     * resetEmploymentCert() = 
+     * updateEmploymentCertSection() = 
+     * updateEmploymentOtherText() = 
+     */
     const resetEmploymentCert = () => {
         employmentCertRadios.forEach(radio => radio.checked = false);
         employmentOtherTextWrapper?.classList.add('hidden');
