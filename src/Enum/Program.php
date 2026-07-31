@@ -14,6 +14,7 @@ enum Program: string
     case BSED_MATHEMATICS = "Bachelor of Secondary Education Major in Mathematics";
     case BSED_SOCIAL_STUDIES = "Bachelor of Secondary Education Major in Social Studies";
     case BSED_VALED = "Bachelor of Secondary Education Major in Values Education";
+    case OTHER = "Other";
 
 
     public const ALL = [
@@ -27,6 +28,7 @@ enum Program: string
         'Bachelor of Secondary Education Major in Mathematics',
         'Bachelor of Secondary Education Major in Social Studies',
         'Bachelor of Secondary Education Major in Values Education',
+        'Other',
     ];
 
     public function label(): string
@@ -42,6 +44,7 @@ enum Program: string
             self::BSED_MATHEMATICS => 'Bachelor of Secondary Education Major in Mathematics',
             self::BSED_SOCIAL_STUDIES => 'Bachelor of Secondary Education Major in Social Studies',
             self::BSED_VALED => 'Bachelor of Secondary Education Major in Values Education',
+            self::OTHER => 'Other',
         };
     }
 }

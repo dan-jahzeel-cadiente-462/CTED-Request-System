@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const commonRequestSelect = document.getElementById('common-request-select');
+    const programSelect = document.getElementById('program-select');
     const deviceSection = document.getElementById('device-request-section');
     const otherCheckbox = document.querySelector('[data-other-checkbox="true"]');
     const otherTextWrapper = document.getElementById('device-other-text-wrapper');
@@ -17,6 +18,48 @@ document.addEventListener('DOMContentLoaded', () => {
     const otherCommonRequestSection = document.getElementById('other-requirement-text-section');
     const otherCommonRequestTextWrapper = document.getElementById('other-requirement-text-wrapper');
     const otherCommonRequestInput = document.getElementById('other-requirement-text');
+
+    // Other programs/courses to be selected
+    const otherProgramSection = document.getElementById('other-program-text-section');
+    const otherProgramTextWrapper = document.getElementById('other-program-text-wrapper');
+    const otherProgramInput = document.getElementById('other-program-text');
+
+    const otherProgramValue = programSelect.dataset.otherProgramValue || 'Other';
+
+    const updateOtherProgramSection = () => {
+        if (programSelect.value === otherProgramValue) {
+            otherProgramSection?.classList.remove('hidden');
+            otherProgramTextWrapper?.classList.remove('hidden');
+            otherProgramInput.value = "";
+        } else {
+            otherProgramSection?.classList.add('hidden');
+            otherProgramTextWrapper?.classList.add('hidden');
+        }
+    }
+
+    const initSelectChevronBehavior = () => {
+        document.querySelectorAll('.select-with-chevron').forEach((wrapper) => {
+            const select = wrapper.querySelector('select');
+            const chevron = wrapper.querySelector('.chevron-icon-wrapper');
+
+            if (!select || !chevron) {
+                return;
+            }
+
+            const setChevronExpanded = (expanded) => {
+                chevron.classList.toggle('rotate-180', expanded);
+                chevron.classList.toggle('text-blue-600', expanded);
+                chevron.classList.toggle('text-slate-400', !expanded);
+            };
+
+            select.addEventListener('focus', () => setChevronExpanded(true));
+            select.addEventListener('blur', () => setChevronExpanded(false));
+        });
+    };
+
+    programSelect.addEventListener('change', updateOtherProgramSection);
+    updateOtherProgramSection();
+    initSelectChevronBehavior();
 
 
     if (!commonRequestSelect) {
