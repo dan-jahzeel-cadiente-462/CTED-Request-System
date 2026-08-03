@@ -9,7 +9,7 @@
                     value="{{ case.value }}"
                     id="device-{{ case.name|lower }}"
                     class="mr-3 h-5 w-5 rounded border-slate-300 text-slate-800 focus:ring-slate-800"
-                    {% if case.value == 'Others, please specify' %}id="device-other" data-other-checkbox="true"{% endif %}
+                    {% if case.value == 'Others, please specify' %}data-other-checkbox="true"{% endif %}
                 />
                 <span>{{ case.label() }}</span>
             </label>

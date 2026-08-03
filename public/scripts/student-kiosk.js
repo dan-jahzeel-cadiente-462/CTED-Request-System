@@ -24,13 +24,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const otherProgramTextWrapper = document.getElementById('other-program-text-wrapper');
     const otherProgramInput = document.getElementById('other-program-text');
 
-    const otherProgramValue = programSelect.dataset.otherProgramValue || 'Other';
+    // program select / other program handling (guarded)
+    const otherProgramValue = programSelect?.dataset?.otherProgramValue || 'Other';
 
     const updateOtherProgramSection = () => {
+        if (!programSelect) return;
         if (programSelect.value === otherProgramValue) {
             otherProgramSection?.classList.remove('hidden');
             otherProgramTextWrapper?.classList.remove('hidden');
-            otherProgramInput.value = "";
+            if (otherProgramInput) otherProgramInput.value = "";
         } else {
             otherProgramSection?.classList.add('hidden');
             otherProgramTextWrapper?.classList.add('hidden');
@@ -57,8 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     };
 
-    programSelect.addEventListener('change', updateOtherProgramSection);
-    updateOtherProgramSection();
+    if (programSelect) {
+        programSelect.addEventListener('change', updateOtherProgramSection);
+        updateOtherProgramSection();
+    }
     initSelectChevronBehavior();
 
 
@@ -66,9 +70,9 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    const devicesRequestValue = commonRequestSelect.dataset.devicesRequestValue || 'Request to Use Devices';
-    const employmentCertRequestValue = commonRequestSelect.dataset.employmentCertRequestValue || 'Certificate of Employment';
-    const otherCommonRequestValue = commonRequestSelect.dataset.otherCommonRequestValue || 'Other';
+    const devicesRequestValue = commonRequestSelect.dataset?.devicesRequestValue || 'Request to Use Devices';
+    const employmentCertRequestValue = commonRequestSelect.dataset?.employmentCertRequestValue || 'Certificate of Employment';
+    const otherCommonRequestValue = commonRequestSelect.dataset?.otherCommonRequestValue || 'Other';
 
     const updateOtherRequirementSection = () => {
         if (commonRequestSelect.value === otherCommonRequestValue) {
@@ -166,6 +170,70 @@ document.addEventListener('DOMContentLoaded', () => {
         studentID.addEventListener('keypress', (e) => {
             if (!/[0-9]/.test(e.key)) {
                 e.preventDefault();
+            }
+        });
+    }
+
+    // Handle form submission: collect inputs, checkboxes, radios and post JSON
+    const form = document.getElementById('student-kiosk-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const fullName = document.getElementById('fullName')?.value || '';
+            const contactNo = document.getElementById('contactNo')?.value || '';
+            const studentIdVal = document.getElementById('studentId')?.value || '';
+            const programVal = document.getElementById('program-select')?.value || '';
+            const programOther = document.getElementById('other-program-text')?.value || '';
+            const commonRequestVal = document.getElementById('common-request-select')?.value || '';
+
+            // devices
+            const deviceCheckboxes = Array.from(document.querySelectorAll('input[name="devices[]"]:checked'));
+            const devices = deviceCheckboxes.map(cb => cb.value);
+            const deviceOther = document.getElementById('device-other-text')?.value || '';
+
+            // employment cert
+            const employmentRadio = document.querySelector('input[name="employment_cert"]:checked');
+            const employmentVal = employmentRadio ? employmentRadio.value : '';
+            const requestOther = document.getElementById('other-requirement-text')?.value || '';
+
+            const payload = {
+                studentId: studentIdVal,
+                fullName: fullName,
+                contactNo: contactNo,
+                program: programVal,
+                program_other: programOther,
+                commonRequest: commonRequestVal,
+                devices: devices,
+                device_other: deviceOther,
+                employment_cert: employmentVal,
+                request_other: requestOther
+            };
+
+            try {
+                const res = await fetch(form.action || '/cted/student-kiosk/submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    form.reset();
+                    alert('Request submitted. Thank you!');
+                    window.location.reload();
+                } else {
+                    const body = await res.json().catch(() => ({}));
+                    // fallback to native submit if server rejects JSON (lets server handle form post)
+                    console.warn('Fetch failed, falling back to native submit', body);
+                    form.submit();
+                }
+            } catch (err) {
+                console.error(err);
+                // network or other JS failure: fall back to browser form submit
+                form.submit();
             }
         });
     }

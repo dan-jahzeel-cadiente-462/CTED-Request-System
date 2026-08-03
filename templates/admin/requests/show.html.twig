@@ -1,0 +1,72 @@
+{% extends 'admin/base.html.twig' %}
+
+{% block admin_title %}Request Detail{% endblock %}
+
+{% block page_actions %}
+    <a href="{{ path('app_admin_requests') }}" class="inline-flex items-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Back to list</a>
+{% endblock %}
+
+{% block admin_body %}
+<div class="space-y-6">
+    <section class="rounded-3xl bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+                <p class="text-sm uppercase tracking-[0.28em] text-slate-500">Request Details</p>
+                <h1 class="mt-2 text-2xl font-semibold text-slate-900">{{ requestEntity.fullName }}</h1>
+            </div>
+            <div class="flex items-center gap-2">
+                <a href="{{ path('app_admin_requests', {page: currentPage}) }}" class="inline-flex items-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Back to list</a>
+            </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 lg:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Student</p>
+                <dl class="mt-4 space-y-4 text-sm text-slate-700">
+                    <div>
+                        <dt class="font-semibold text-slate-900">Student ID</dt>
+                        <dd>{{ requestEntity.studentId }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-900">Contact</dt>
+                        <dd>{{ requestEntity.contactNo }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-900">Program</dt>
+                        <dd>{{ requestEntity.program }}</dd>
+                    </div>
+                </dl>
+            </div>
+
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Request</p>
+                <dl class="mt-4 space-y-4 text-sm text-slate-700">
+                    <div>
+                        <dt class="font-semibold text-slate-900">Type</dt>
+                        <dd>{{ requestEntity.requestType }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-900">Time in</dt>
+                        <dd>{{ requestEntity.timeIn ? requestEntity.timeIn|date('F j, Y H:i') : '-' }}</dd>
+                    </div>
+                    <div>
+                        <dt class="font-semibold text-slate-900">Time out</dt>
+                        <dd>{{ requestEntity.timeOut ? requestEntity.timeOut|date('F j, Y H:i') : 'Not recorded' }}</dd>
+                    </div>
+                </dl>
+            </div>
+        </div>
+
+        <div class="mt-6 rounded-3xl bg-slate-50 p-5">
+            <p class="text-xs uppercase tracking-[0.2em] text-slate-500">Device Items</p>
+            <ul class="mt-4 space-y-2 text-sm text-slate-700">
+                {% for item in requestEntity.deviceRequestItems %}
+                    <li class="rounded-2xl bg-white border border-slate-200 px-4 py-3">{{ item.name }}</li>
+                {% else %}
+                    <li class="rounded-2xl bg-white border border-slate-200 px-4 py-3 text-slate-500">No device items recorded for this request.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </section>
+</div>
+{% endblock %}

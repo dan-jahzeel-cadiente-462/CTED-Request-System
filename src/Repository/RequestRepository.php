@@ -16,6 +16,19 @@ class RequestRepository extends ServiceEntityRepository
         parent::__construct($registry, Request::class);
     }
 
+    /**
+     * @return Request[]
+     */
+    public function findRequestsPage(int $page, int $limit): array
+    {
+        return $this->createQueryBuilder('r')
+            ->orderBy('r.time_in', 'DESC')
+            ->setFirstResult(max(0, ($page - 1) * $limit))
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
 //    /**
 //     * @return Request[] Returns an array of Request objects
 //     */

@@ -2,18 +2,19 @@
 
 namespace App\Entity;
 
+use App\Entity\DeviceRequestItem;
 use App\Repository\RequestRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Uid\Uuid;
-use Symfony\Component\Uid\UuidV7;
 
 #[ORM\Entity(repositoryClass: RequestRepository::class)]
+#[ORM\HasLifecycleCallbacks]
 class Request
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?Uuid $id = null;
+    #[ORM\Column(type: 'string', length: 255)]
+    private ?string $id = null;
 
     #[ORM\Column(length: 9)]
     private ?string $student_id = null;
@@ -35,9 +36,16 @@ class Request
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $time_out = null;
-    
 
-    public function getId(): ?int
+    #[ORM\OneToMany(mappedBy: 'request', targetEntity: DeviceRequestItem::class, orphanRemoval: true, cascade: ['persist'])]
+    private Collection $deviceRequestItems;
+
+    public function __construct()
+    {
+        $this->deviceRequestItems = new ArrayCollection();
+    }
+
+    public function getId(): ?string
     {
         return $this->id;
     }
@@ -124,5 +132,46 @@ class Request
         $this->time_out = $time_out;
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, DeviceRequestItem>
+     */
+    public function getDeviceRequestItems(): Collection
+    {
+        return $this->deviceRequestItems;
+    }
+
+    public function addDeviceRequestItem(DeviceRequestItem $deviceRequestItem): static
+    {
+        if (!$this->deviceRequestItems->contains($deviceRequestItem)) {
+            $this->deviceRequestItems->add($deviceRequestItem);
+            $deviceRequestItem->setRequest($this);
+        }
+
+        return $this;
+    }
+
+    public function removeDeviceRequestItem(DeviceRequestItem $deviceRequestItem): static
+    {
+        if ($this->deviceRequestItems->removeElement($deviceRequestItem)) {
+            if ($deviceRequestItem->getRequest() === $this) {
+                $deviceRequestItem->setRequest($this);
+            }
+        }
+
+        return $this;
+    }
+
+    #[ORM\PrePersist]
+    public function setTimeInValue(): void
+    {
+        if ($this->time_in === null) {
+            $this->time_in = new \DateTimeImmutable();
+        }
+
+        if ($this->id === null) {
+            $this->id = bin2hex(random_bytes(16));
+        }
     }
 }
