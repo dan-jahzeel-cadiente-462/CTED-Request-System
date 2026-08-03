@@ -3,12 +3,15 @@
 namespace App\Controller\Kiosk;
 
 use App\Entity\Request as RequestEntity;
+use App\Entity\DeviceRequestItem;
+use App\Entity\Report;
 use App\Enum\CommonRequest;
 use App\Enum\Devices;
 use App\Enum\EmploymentCertificate;
 use App\Enum\Program;
+use App\Enum\Status;
+use App\Repository\ReportRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use App\Entity\DeviceRequestItem;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
@@ -31,7 +34,7 @@ final class StudentKioskController extends AbstractController
     }
 
     #[Route('/cted/student-kiosk/submit', name: 'app_kiosk_student_kiosk_submit', methods: ['POST'])]
-    public function submit(HttpRequest $request, EntityManagerInterface $em): JsonResponse
+    public function submit(HttpRequest $request, EntityManagerInterface $em, ReportRepository $reportRepository): JsonResponse
     {
         $data = [];
 
@@ -89,7 +92,17 @@ final class StudentKioskController extends AbstractController
         }
 
         $entity->setRequestType($requestType ?: '');
+        $entity->setStatus(Status::PENDING->value);
         $entity->setTimeIn(new \DateTimeImmutable());
+
+        $reportDate = new \DateTimeImmutable('today');
+        $report = $reportRepository->findOneByDate($reportDate);
+        if ($report === null) {
+            $report = new Report();
+            $report->setDate($reportDate);
+            $em->persist($report);
+        }
+        $entity->setReport($report);
 
         $em->persist($entity);
         $em->flush();

@@ -29,6 +29,51 @@ class RequestRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Request[]
+     */
+    public function findRequestsByDate(string $date): array
+    {
+        $dateTime = \DateTimeImmutable::createFromFormat('Y-m-d', $date);
+        if ($dateTime === false) {
+            return [];
+        }
+
+        $start = $dateTime->setTime(0, 0, 0);
+        $end = $dateTime->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.time_in BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->orderBy('r.time_in', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function countByStatus(string $status): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->andWhere('r.status = :status')
+            ->setParameter('status', $status)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countStatuses(array $statuses): array
+    {
+        $results = $this->createQueryBuilder('r')
+            ->select('r.status AS status, COUNT(r.id) AS count')
+            ->andWhere('r.status IN (:statuses)')
+            ->setParameter('statuses', $statuses)
+            ->groupBy('r.status')
+            ->getQuery()
+            ->getArrayResult();
+
+        return array_column($results, 'count', 'status');
+    }
+
 //    /**
 //     * @return Request[] Returns an array of Request objects
 //     */

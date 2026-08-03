@@ -3,6 +3,8 @@
 namespace App\Controller\Admin;
 
 use App\Entity\Request as RequestEntity;
+use App\Entity\RequestStatus;
+use App\Enum\Status;
 use App\Repository\RequestRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -37,7 +39,43 @@ final class RequestsController extends AbstractController
         return $this->render('admin/requests/show.html.twig', [
             'requestEntity' => $requestEntity,
             'currentPage' => $page,
+            'statusChoices' => Status::ALL,
         ]);
+    }
+
+    #[Route('/admin/requests/{id}/status', name: 'app_admin_requests_status', methods: ['POST'])]
+    public function updateStatus(Request $request, RequestEntity $requestEntity, EntityManagerInterface $em): Response
+    {
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('status-request'.$requestEntity->getId(), $token)) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
+
+        $status = $request->request->get('status');
+        $note = $request->request->get('note');
+        $processedBy = $request->request->get('processedBy', 'Admin');
+        $page = max(1, (int) $request->request->get('page', 1));
+
+        if (!in_array($status, Status::ALL, true)) {
+            $this->addFlash('error', 'Invalid status selection.');
+
+            return $this->redirectToRoute('app_admin_requests_show', ['id' => $requestEntity->getId(), 'page' => $page]);
+        }
+
+        $requestEntity->setStatus($status);
+
+        $requestStatus = new RequestStatus();
+        $requestStatus->setRequest($requestEntity);
+        $requestStatus->setStatus($status);
+        $requestStatus->setNote($note);
+        $requestStatus->setProcessedBy($processedBy);
+
+        $em->persist($requestStatus);
+        $em->flush();
+
+        $this->addFlash('success', 'Request status updated.');
+
+        return $this->redirectToRoute('app_admin_requests_show', ['id' => $requestEntity->getId(), 'page' => $page]);
     }
 
     #[Route('/admin/requests/{id}/delete', name: 'app_admin_requests_delete', methods: ['POST'])]

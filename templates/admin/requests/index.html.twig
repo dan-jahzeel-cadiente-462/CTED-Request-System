@@ -25,6 +25,7 @@
                         <th class="px-4 py-3">Name</th>
                         <th class="px-4 py-3">Program</th>
                         <th class="px-4 py-3">Request Type</th>
+                        <th class="px-4 py-3">Status</th>
                         <th class="px-4 py-3">Time in</th>
                         <th class="px-4 py-3">Actions</th>
                     </tr>
@@ -36,6 +37,11 @@
                             <td class="px-4 py-4 text-slate-700">{{ request.fullName }}</td>
                             <td class="px-4 py-4 text-slate-700">{{ request.program }}</td>
                             <td class="px-4 py-4 text-slate-700">{{ request.requestType }}</td>
+                            <td class="px-4 py-4">
+                                <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ request.status == 'Completed' ? 'bg-emerald-100 text-emerald-700' : request.status == 'Cancelled' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700' }}">
+                                    {{ request.status ?: 'Pending' }}
+                                </span>
+                            </td>
                             <td class="px-4 py-4 text-slate-700">{{ request.timeIn ? request.timeIn|date('M d, Y H:i') : '-' }}</td>
                             <td class="px-4 py-4 text-slate-700">
                                 <div class="flex flex-wrap gap-2">

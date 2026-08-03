@@ -3,6 +3,9 @@
 namespace App\Entity;
 
 use App\Entity\DeviceRequestItem;
+use App\Entity\Report;
+use App\Entity\RequestStatus;
+use App\Enum\Status;
 use App\Repository\RequestRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
@@ -31,6 +34,9 @@ class Request
     #[ORM\Column(length: 128)]
     private ?string $request_type = null;
 
+    #[ORM\Column(length: 32, options: ['default' => 'Pending'])]
+    private ?string $status = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $time_in = null;
 
@@ -40,9 +46,17 @@ class Request
     #[ORM\OneToMany(mappedBy: 'request', targetEntity: DeviceRequestItem::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $deviceRequestItems;
 
+    #[ORM\OneToMany(mappedBy: 'request', targetEntity: RequestStatus::class, orphanRemoval: true, cascade: ['persist', 'remove'])]
+    private Collection $statuses;
+
+    #[ORM\ManyToOne(targetEntity: Report::class, inversedBy: 'requests')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Report $report = null;
+
     public function __construct()
     {
         $this->deviceRequestItems = new ArrayCollection();
+        $this->statuses = new ArrayCollection();
     }
 
     public function getId(): ?string
@@ -110,6 +124,18 @@ class Request
         return $this;
     }
 
+    public function getStatus(): ?string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): static
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
     public function getTimeIn(): ?\DateTimeImmutable
     {
         return $this->time_in;
@@ -163,11 +189,56 @@ class Request
         return $this;
     }
 
+    /**
+     * @return Collection<int, RequestStatus>
+     */
+    public function getStatuses(): Collection
+    {
+        return $this->statuses;
+    }
+
+    public function addStatus(RequestStatus $status): static
+    {
+        if (!$this->statuses->contains($status)) {
+            $this->statuses->add($status);
+            $status->setRequest($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStatus(RequestStatus $status): static
+    {
+        if ($this->statuses->removeElement($status)) {
+            if ($status->getRequest() === $this) {
+                $status->setRequest($this);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getReport(): ?Report
+    {
+        return $this->report;
+    }
+
+    public function setReport(?Report $report): static
+    {
+        $this->report = $report;
+
+        return $this;
+    }
+
     #[ORM\PrePersist]
     public function setTimeInValue(): void
     {
         if ($this->time_in === null) {
             $this->time_in = new \DateTimeImmutable();
+        }
+
+        if ($this->status === null) {
+            $this->status = Status::PENDING->value;
         }
 
         if ($this->id === null) {
