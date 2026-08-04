@@ -9,6 +9,8 @@ use App\Repository\RequestRepository;
 use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use DateTimeImmutable;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -42,6 +44,26 @@ final class RequestsController extends AbstractController
             'requestTypeOptions' => $requestRepository->findDistinctRequestTypes(),
             'statusOptions' => $requestRepository->findDistinctStatuses(),
         ]);
+    }
+
+    #[Route('/admin/requests/badge-count', name: 'app_admin_requests_badge_count', methods: ['GET'])]
+    public function badgeCount(RequestRepository $requestRepository, Request $request): JsonResponse
+    {
+        $session = $request->getSession();
+        if (!$session->isStarted()) {
+            $session->start();
+        }
+
+        $lastSeen = $session->get('admin.requests.last_seen_at');
+        if (!$lastSeen instanceof DateTimeImmutable) {
+            $lastSeen = new DateTimeImmutable();
+            $session->set('admin.requests.last_seen_at', $lastSeen);
+            return new JsonResponse(['count' => 0]);
+        }
+
+        $count = $requestRepository->countRequestsSince($lastSeen);
+
+        return new JsonResponse(['count' => $count]);
     }
 
     #[Route('/admin/requests/bulk-delete', name: 'app_admin_requests_bulk_delete', methods: ['POST'])]
