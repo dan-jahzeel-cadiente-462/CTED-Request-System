@@ -31,4 +31,17 @@ class ReportRepository extends ServiceEntityRepository
     {
         return $this->findOneBy(['date' => $date]);
     }
+
+    /**
+     * @return Report[]
+     */
+    public function findReportsByDate(\DateTimeImmutable $date): array
+    {
+        return $this->createQueryBuilder('r')
+            ->andWhere('r.date = :date')
+            ->setParameter('date', $date)
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

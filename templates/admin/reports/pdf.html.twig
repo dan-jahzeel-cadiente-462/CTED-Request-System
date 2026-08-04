@@ -4,8 +4,12 @@
 
 {% block body %}
     <div style="font-family: Arial, sans-serif; font-size: 12px; color: #1f2937;">
-        <h1 style="font-size: 24px; margin-bottom: 8px;">Request Report</h1>
-        <p style="margin-bottom: 24px;">Date: {{ date|date('F j, Y') }}</p>
+        <!-- Logo Header in the center -->
+        <div style="text-align: center; margin-bottom: 16px;">
+            <img src="{{ asset('images/NORSU Logo.png') }}" alt="Logo" style="max-width: 160px; height: auto; display: block; margin: 0 auto;">
+            <h1 style="font-size: 22px; margin: 12px 0 0;">Request Report</h1>
+            <p style="margin: 6px 0 0; font-size: 12px; color: #6b7280;">Date: {{ date|date('F j, Y') }} | Generated: {{ generatedAt|date('F j, Y H:i') }}</p>
+        </div>
 
         <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
             <thead>

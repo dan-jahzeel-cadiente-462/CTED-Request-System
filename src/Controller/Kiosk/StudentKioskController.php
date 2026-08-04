@@ -55,12 +55,16 @@ final class StudentKioskController extends AbstractController
             $parts[] = $data['commonRequest'];
         }
 
-        if (!empty($data['devices']) && is_array($data['devices'])) {
-            $parts[] = 'Devices: ' . implode(', ', $data['devices']);
-        }
+        $isDeviceRequest = isset($data['commonRequest']) && $data['commonRequest'] === CommonRequest::REQUEST_TO_USE_DEVICES->value;
 
-        if (!empty($data['device_other'])) {
-            $parts[] = 'Device other: ' . $data['device_other'];
+        if (!$isDeviceRequest) {
+            if (!empty($data['devices']) && is_array($data['devices'])) {
+                $parts[] = 'Devices: ' . implode(', ', $data['devices']);
+            }
+
+            if (!empty($data['device_other'])) {
+                $parts[] = 'Device other: ' . $data['device_other'];
+            }
         }
 
         if (!empty($data['employment_cert'])) {

@@ -18,65 +18,104 @@ final class ReportsController extends AbstractController
     {
         $format = $request->query->get('format', 'web');
         $date = $request->query->get('date');
-        $month = $request->query->get('month');
+        $page = max(1, $request->query->getInt('page', 1));
+        $perPage = 15;
 
-        $reportDates = $reportRepository->findAllOrderedByDate();
+        $allReports = $reportRepository->findAllOrderedByDate();
         $reportDateMap = [];
-        foreach ($reportDates as $report) {
-            $reportDateMap[$report->getDate()->format('Y-m-d')] = [
-                'count' => $report->getRequests()->count(),
+        $recentReportDates = [];
+
+        foreach ($allReports as $report) {
+            $reportKey = $report->getDate()->format('Y-m-d');
+            if (!isset($reportDateMap[$reportKey])) {
+                $reportDateMap[$reportKey] = ['count' => 0];
+            }
+
+            $reportDateMap[$reportKey]['count'] += $report->getRequests()->count();
+        }
+
+        foreach ($reportDateMap as $dateKey => $dateInfo) {
+            $recentReportDates[] = [
+                'date' => DateTimeImmutable::createFromFormat('Y-m-d', $dateKey),
+                'count' => $dateInfo['count'],
             ];
         }
+
+        usort($recentReportDates, static fn(array $a, array $b): int => $b['date'] <=> $a['date']);
+
+        $totalDates = count($recentReportDates);
+        $totalPages = max(1, (int) ceil($totalDates / $perPage));
+        $reportDates = array_slice($recentReportDates, ($page - 1) * $perPage, $perPage);
 
         $selectedDate = null;
         $reportRequests = [];
         if ($date) {
             $selectedDate = DateTimeImmutable::createFromFormat('Y-m-d', $date);
             if ($selectedDate instanceof DateTimeImmutable) {
-                $report = $reportRepository->findOneByDate($selectedDate);
-                if ($report !== null) {
-                    $reportRequests = $report->getRequests()->toArray();
+                $reportsByDate = $reportRepository->findReportsByDate($selectedDate);
+                if ($reportsByDate !== []) {
+                    $requestMap = [];
+                    foreach ($reportsByDate as $report) {
+                        foreach ($report->getRequests() as $requestEntity) {
+                            $requestMap[$requestEntity->getId()] = $requestEntity;
+                        }
+                    }
+
+                    $reportRequests = array_values($requestMap);
                     usort($reportRequests, static fn(RequestEntity $a, RequestEntity $b): int => $a->getTimeIn() <=> $b->getTimeIn());
                 }
             }
         }
 
-        $displayDate = null;
-        if ($month) {
-            $displayDate = DateTimeImmutable::createFromFormat('Y-m', $month);
-        }
-        if (!$displayDate instanceof DateTimeImmutable) {
-            $displayDate = $selectedDate ?? new DateTimeImmutable('today');
+        $monthString = $request->query->get('month');
+        $calendarReference = null;
+        if ($monthString) {
+            $calendarReference = DateTimeImmutable::createFromFormat('Y-m', $monthString);
         }
 
-        $calendarMonth = $displayDate->format('F');
-        $calendarYear = (int) $displayDate->format('Y');
-        $firstOfMonth = $displayDate->modify('first day of this month');
-        $startOfWeek = $firstOfMonth->modify('-' . (max(1, (int) $firstOfMonth->format('N')) - 1) . ' days');
+        if (!$calendarReference instanceof DateTimeImmutable) {
+            $calendarReference = $selectedDate ?? new DateTimeImmutable('now');
+            $calendarReference = DateTimeImmutable::createFromFormat('Y-m', $calendarReference->format('Y-m')) ?: new DateTimeImmutable('now');
+        }
+
+        $calendarMonth = $calendarReference->format('F');
+        $calendarYear = $calendarReference->format('Y');
+        $prevMonth = $calendarReference->modify('-1 month')->format('Y-m');
+        $nextMonth = $calendarReference->modify('+1 month')->format('Y-m');
+
+        $firstDayOfMonth = DateTimeImmutable::createFromFormat('Y-m-d', $calendarReference->format('Y-m-01'));
+        $lastDayOfMonth = $calendarReference->modify('last day of this month');
+        $startDay = $firstDayOfMonth->modify('-' . ((int) $firstDayOfMonth->format('N') - 1) . ' days');
+        $endDay = $lastDayOfMonth->modify('+' . (7 - (int) $lastDayOfMonth->format('N')) . ' days');
 
         $calendarWeeks = [];
-        $currentDay = $startOfWeek;
-        for ($week = 0; $week < 6; $week++) {
-            $weekDays = [];
-            for ($day = 0; $day < 7; $day++) {
-                $key = $currentDay->format('Y-m-d');
-                $weekDays[] = [
-                    'date' => $currentDay,
-                    'inMonth' => $currentDay->format('Y-m') === $firstOfMonth->format('Y-m'),
-                    'hasReport' => isset($reportDateMap[$key]),
-                    'reportCount' => $reportDateMap[$key]['count'] ?? 0,
-                ];
-                $currentDay = $currentDay->modify('+1 day');
+        $day = $startDay;
+        $currentDate = new DateTimeImmutable('now');
+        $week = [];
+
+        while ($day <= $endDay) {
+            $dateKey = $day->format('Y-m-d');
+            $week[] = [
+                'date' => $day,
+                'inMonth' => $day->format('Y-m') === $calendarReference->format('Y-m'),
+                'isToday' => $day->format('Y-m-d') === $currentDate->format('Y-m-d'),
+                'hasReport' => isset($reportDateMap[$dateKey]),
+                'reportCount' => $reportDateMap[$dateKey]['count'] ?? 0,
+            ];
+
+            if (count($week) === 7) {
+                $calendarWeeks[] = $week;
+                $week = [];
             }
-            $calendarWeeks[] = $weekDays;
+
+            $day = $day->modify('+1 day');
         }
 
-        $prevMonth = $displayDate->modify('first day of last month')->format('Y-m');
-        $nextMonth = $displayDate->modify('first day of next month')->format('Y-m');
-
         if ($format === 'pdf' && $selectedDate !== null) {
+            $generatedAt = new DateTimeImmutable('now');
             $html = $this->renderView('admin/reports/pdf.html.twig', [
                 'date' => $selectedDate,
+                'generatedAt' => $generatedAt,
                 'requests' => $reportRequests,
             ]);
 
@@ -87,7 +126,7 @@ final class ReportsController extends AbstractController
 
             return new Response($dompdf->output(), 200, [
                 'Content-Type' => 'application/pdf',
-                'Content-Disposition' => sprintf('attachment; filename="requests-%s.pdf"', $selectedDate->format('Y-m-d')),
+                'Content-Disposition' => sprintf('attachment; filename="requests-%s-%s.pdf"', $selectedDate->format('Y-m-d'), $generatedAt->format('H-i-s')),
             ]);
         }
 
@@ -96,6 +135,8 @@ final class ReportsController extends AbstractController
             'selectedDate' => $selectedDate,
             'requests' => $reportRequests,
             'format' => $format,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
             'calendarMonth' => $calendarMonth,
             'calendarYear' => $calendarYear,
             'calendarWeeks' => $calendarWeeks,

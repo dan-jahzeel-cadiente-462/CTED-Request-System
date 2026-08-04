@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Request;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\ORM\QueryBuilder;
 
 /**
  * @extends ServiceEntityRepository<Request>
@@ -19,14 +20,92 @@ class RequestRepository extends ServiceEntityRepository
     /**
      * @return Request[]
      */
-    public function findRequestsPage(int $page, int $limit): array
+    public function findRequestsPage(int $page, int $limit, array $filters = []): array
     {
-        return $this->createQueryBuilder('r')
+        $qb = $this->createFilterQueryBuilder($filters)
             ->orderBy('r.time_in', 'DESC')
             ->setFirstResult(max(0, ($page - 1) * $limit))
-            ->setMaxResults($limit)
+            ->setMaxResults($limit);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    public function countRequests(array $filters = []): int
+    {
+        return (int) $this->createFilterQueryBuilder($filters)
+            ->select('COUNT(r.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * @return Request[]
+     */
+    public function findRequests(array $filters = []): array
+    {
+        return $this->createFilterQueryBuilder($filters)
+            ->orderBy('r.time_in', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function findDistinctPrograms(): array
+    {
+        return array_column($this->createQueryBuilder('r')
+            ->select('DISTINCT r.program')
+            ->orderBy('r.program', 'ASC')
+            ->getQuery()
+            ->getArrayResult(), 'program');
+    }
+
+    public function findDistinctRequestTypes(): array
+    {
+        return array_column($this->createQueryBuilder('r')
+            ->select('DISTINCT r.request_type')
+            ->orderBy('r.request_type', 'ASC')
+            ->getQuery()
+            ->getArrayResult(), 'request_type');
+    }
+
+    public function findDistinctStatuses(): array
+    {
+        return array_column($this->createQueryBuilder('r')
+            ->select('DISTINCT r.status')
+            ->orderBy('r.status', 'ASC')
+            ->getQuery()
+            ->getArrayResult(), 'status');
+    }
+
+    private function createFilterQueryBuilder(array $filters): QueryBuilder
+    {
+        $qb = $this->createQueryBuilder('r');
+
+        if (!empty($filters['program'])) {
+            $qb->andWhere('r.program = :program')
+                ->setParameter('program', $filters['program']);
+        }
+
+        if (!empty($filters['status'])) {
+            $qb->andWhere('r.status = :status')
+                ->setParameter('status', $filters['status']);
+        }
+
+        if (!empty($filters['requestType'])) {
+            $qb->andWhere('r.request_type = :requestType')
+                ->setParameter('requestType', $filters['requestType']);
+        }
+
+        if (!empty($filters['studentId'])) {
+            $qb->andWhere('r.student_id LIKE :studentId')
+                ->setParameter('studentId', '%' . $filters['studentId'] . '%');
+        }
+
+        if (!empty($filters['fullName'])) {
+            $qb->andWhere('r.full_name LIKE :fullName')
+                ->setParameter('fullName', '%' . $filters['fullName'] . '%');
+        }
+
+        return $qb;
     }
 
     /**

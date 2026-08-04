@@ -6,6 +6,7 @@ use App\Entity\Request as RequestEntity;
 use App\Entity\RequestStatus;
 use App\Enum\Status;
 use App\Repository\RequestRepository;
+use Doctrine\DBAL\Connection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,16 +20,161 @@ final class RequestsController extends AbstractController
     {
         $page = max(1, (int) $request->query->get('page', 1));
         $limit = 12;
-        $totalRequests = $requestRepository->count([]);
+        $filters = [
+            'program' => $request->query->get('program', ''),
+            'status' => $request->query->get('status', ''),
+            'requestType' => $request->query->get('requestType', ''),
+            'studentId' => $request->query->get('studentId', ''),
+            'fullName' => $request->query->get('fullName', ''),
+        ];
+
+        $totalRequests = $requestRepository->countRequests($filters);
         $totalPages = (int) ceil($totalRequests / $limit);
-        $requests = $requestRepository->findRequestsPage($page, $limit);
+        $requests = $requestRepository->findRequestsPage($page, $limit, $filters);
 
         return $this->render('admin/requests/index.html.twig', [
             'requests' => $requests,
             'currentPage' => $page,
             'totalPages' => max(1, $totalPages),
             'totalRequests' => $totalRequests,
+            'filters' => $filters,
+            'programOptions' => $requestRepository->findDistinctPrograms(),
+            'requestTypeOptions' => $requestRepository->findDistinctRequestTypes(),
+            'statusOptions' => $requestRepository->findDistinctStatuses(),
         ]);
+    }
+
+    #[Route('/admin/requests/bulk-delete', name: 'app_admin_requests_bulk_delete', methods: ['POST'])]
+    public function bulkDelete(Request $request, RequestRepository $requestRepository, EntityManagerInterface $em): Response
+    {
+        throw $this->createNotFoundException('Bulk delete is no longer available.');
+    }
+
+    #[Route('/admin/requests/export-sql', name: 'app_admin_requests_export_sql', methods: ['GET'])]
+    public function exportSql(Request $request, Connection $connection, RequestRepository $requestRepository): Response
+    {
+        $filters = [
+            'program' => $request->query->get('program', ''),
+            'status' => $request->query->get('status', ''),
+            'requestType' => $request->query->get('requestType', ''),
+            'studentId' => $request->query->get('studentId', ''),
+            'fullName' => $request->query->get('fullName', ''),
+        ];
+
+        $requests = $requestRepository->findRequests($filters);
+        $timestamp = (new \DateTimeImmutable('now'))->format('Ymd_His');
+        $filename = sprintf('requests-table-%s.sql', $timestamp);
+
+        $schemaData = $connection->fetchAssociative("SHOW CREATE TABLE `request`");
+        $schemaSql = $schemaData['Create Table'] ?? '';
+        $insertSql = [];
+        foreach ($requests as $requestRow) {
+            $columns = [
+                'id',
+                'student_id',
+                'full_name',
+                'contact_no',
+                'program',
+                'request_type',
+                'status',
+                'time_in',
+                'time_out',
+            ];
+            $values = [
+                $connection->quote($requestRow->getId()),
+                $connection->quote($requestRow->getStudentId()),
+                $connection->quote($requestRow->getFullName()),
+                $connection->quote($requestRow->getContactNo()),
+                $connection->quote($requestRow->getProgram()),
+                $connection->quote($requestRow->getRequestType()),
+                $connection->quote($requestRow->getStatus() ?? 'Pending'),
+                $connection->quote($requestRow->getTimeIn()->format('Y-m-d H:i:s')),
+                $requestRow->getTimeOut() ? $connection->quote($requestRow->getTimeOut()->format('Y-m-d H:i:s')) : 'NULL',
+            ];
+            $insertSql[] = sprintf('INSERT INTO `request` (`%s`) VALUES (%s);', implode('`, `', $columns), implode(', ', $values));
+        }
+
+        $body = sprintf("%s;\n\n%s\n", $schemaSql, implode("\n", $insertSql));
+
+        return new Response($body, 200, [
+            'Content-Type' => 'application/sql',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+        ]);
+    }
+
+    #[Route('/admin/requests/export-csv', name: 'app_admin_requests_export_csv', methods: ['GET'])]
+    public function exportCsv(Request $request, RequestRepository $requestRepository): Response
+    {
+        $filters = [
+            'program' => $request->query->get('program', ''),
+            'status' => $request->query->get('status', ''),
+            'requestType' => $request->query->get('requestType', ''),
+            'studentId' => $request->query->get('studentId', ''),
+            'fullName' => $request->query->get('fullName', ''),
+        ];
+
+        $requests = $requestRepository->findRequests($filters);
+        $timestamp = (new \DateTimeImmutable('now'))->format('Ymd_His');
+        $filename = sprintf('requests-table-%s.csv', $timestamp);
+
+        $handle = fopen('php://temp', 'r+');
+
+        fputcsv($handle, [
+            'ID', 'Student ID', 'Full Name', 'Contact No', 'Program', 'Request Type', 'Status', 'Time In', 'Time Out',
+        ]);
+
+        foreach ($requests as $requestRow) {
+            fputcsv($handle, [
+                $requestRow->getId(),
+                $requestRow->getStudentId(),
+                $requestRow->getFullName(),
+                $requestRow->getContactNo(),
+                $requestRow->getProgram(),
+                $requestRow->getRequestType(),
+                $requestRow->getStatus() ?? 'Pending',
+                $requestRow->getTimeIn()->format('Y-m-d H:i:s'),
+                $requestRow->getTimeOut() ? $requestRow->getTimeOut()->format('Y-m-d H:i:s') : '',
+            ]);
+        }
+
+        rewind($handle);
+        $csv = stream_get_contents($handle);
+        fclose($handle);
+
+        return new Response($csv, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => sprintf('attachment; filename="%s"', $filename),
+        ]);
+    }
+
+    #[Route('/admin/requests/import-sql', name: 'app_admin_requests_import_sql', methods: ['POST'])]
+    public function importSql(Request $request, Connection $connection): Response
+    {
+        $token = $request->request->get('_token');
+        if (!$this->isCsrfTokenValid('import-sql-requests', $token)) {
+            throw $this->createAccessDeniedException('Invalid CSRF token.');
+        }
+
+        $uploadedFile = $request->files->get('sqlFile');
+        if ($uploadedFile === null || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
+            $this->addFlash('error', 'Please upload a valid SQL file.');
+
+            return $this->redirectToRoute('app_admin_requests');
+        }
+
+        $sql = file_get_contents($uploadedFile->getRealPath());
+        $statements = array_filter(array_map('trim', preg_split('/;\s*\r?\n/', $sql)));
+
+        foreach ($statements as $statement) {
+            if ($statement === '') {
+                continue;
+            }
+            $connection->executeStatement($statement);
+        }
+
+        $this->addFlash('success', 'SQL import completed successfully.');
+
+        return $this->redirectToRoute('app_admin_requests');
     }
 
     #[Route('/admin/requests/{id}', name: 'app_admin_requests_show', methods: ['GET'])]

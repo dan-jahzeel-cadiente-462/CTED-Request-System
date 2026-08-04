@@ -17,7 +17,71 @@
             </div>
         </div>
 
-        <div class="mt-6 overflow-x-auto">
+        <form method="get" action="{{ path('app_admin_requests') }}" class="mt-6">
+            <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Program</label>
+                    <select name="program" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+                        <option value="">All programs</option>
+                        {% for program in programOptions %}
+                            <option value="{{ program }}" {% if filters.program == program %}selected{% endif %}>{{ program }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Status</label>
+                    <select name="status" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+                        <option value="">All statuses</option>
+                        {% for status in statusOptions %}
+                            <option value="{{ status }}" {% if filters.status == status %}selected{% endif %}>{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Request Type</label>
+                    <select name="requestType" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+                        <option value="">All request types</option>
+                        {% for requestType in requestTypeOptions %}
+                            <option value="{{ requestType }}" {% if filters.requestType == requestType %}selected{% endif %}>{{ requestType }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Student ID</label>
+                    <input type="text" name="studentId" value="{{ filters.studentId }}" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" placeholder="Student ID" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700">Student Name</label>
+                    <input type="text" name="fullName" value="{{ filters.fullName }}" class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" placeholder="Student name" />
+                </div>
+                <div class="flex items-end gap-2">
+                    <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800">Filter</button>
+                    <a href="{{ path('app_admin_requests') }}" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">Reset</a>
+                </div>
+            </div>
+        </form>
+
+        <div class="mt-6 grid gap-6 md:grid-cols-2">
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <h3 class="text-sm font-semibold text-slate-900">Export Requests</h3>
+                <p class="mt-1 text-sm text-slate-600">Export filtered requests to a file.</p>
+                <div class="mt-4 space-x-2">
+                    <a href="{{ path('app_admin_requests_export_sql', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Export as SQL</a>
+                    <a href="{{ path('app_admin_requests_export_csv', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Export as CSV</a>
+                </div>
+            </div>
+            <div class="rounded-3xl bg-slate-50 p-5">
+                <h3 class="text-sm font-semibold text-slate-900">Import Requests</h3>
+                <p class="mt-1 text-sm text-slate-600">Import requests from a SQL file.</p>
+                <form action="{{ path('app_admin_requests_import_sql') }}" method="post" enctype="multipart/form-data" class="mt-4 flex items-center gap-2">
+                    <input type="hidden" name="_token" value="{{ csrf_token('import-sql-requests') }}">
+                    <input type="file" name="sqlFile" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-slate-700 hover:file:bg-slate-50"/>
+                    <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Import</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="mt-4 overflow-x-auto">
             <table class="min-w-full divide-y divide-slate-200 text-left text-sm">
                 <thead class="bg-slate-50 text-slate-700 uppercase tracking-[0.16em] text-[11px]">
                     <tr>
@@ -56,7 +120,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-500">No requests found.</td>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500">No requests found.</td>
                         </tr>
                     {% endfor %}
                 </tbody>
@@ -66,7 +130,7 @@
         {% if totalPages > 1 %}
             <nav class="mt-6 flex flex-wrap items-center gap-2 text-sm" aria-label="Pagination">
                 {% for page in 1..totalPages %}
-                    <a href="{{ path('app_admin_requests', {page: page}) }}" class="inline-flex items-center justify-center rounded-full px-4 py-2 {{ page == currentPage ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ page }}</a>
+                    <a href="{{ path('app_admin_requests', filters|merge({'page': page})) }}" class="inline-flex items-center justify-center rounded-full px-4 py-2 {{ page == currentPage ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200' }}">{{ page }}</a>
                 {% endfor %}
             </nav>
         {% endif %}
