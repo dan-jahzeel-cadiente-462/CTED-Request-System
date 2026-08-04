@@ -61,23 +61,30 @@
             </div>
         </form>
 
-        <div class="mt-6 grid gap-6 md:grid-cols-2">
-            <div class="rounded-3xl bg-slate-50 p-5">
-                <h3 class="text-sm font-semibold text-slate-900">Export Requests</h3>
-                <p class="mt-1 text-sm text-slate-600">Export filtered requests to a file.</p>
-                <div class="mt-4 space-x-2">
-                    <a href="{{ path('app_admin_requests_export_sql', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Export as SQL</a>
-                    <a href="{{ path('app_admin_requests_export_csv', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Export as CSV</a>
+        <div class="mt-6" data-controller="collapsible">
+            <button type="button" data-action="click->collapsible#toggle" class="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                <span>Advanced Options</span>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" class="h-5 w-5"><path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd" /></svg>
+            </button>
+
+            <div data-collapsible-target="content" class="hidden mt-4 grid gap-6 md:grid-cols-2">
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <h3 class="text-sm font-semibold text-slate-900">Export Requests</h3>
+                    <p class="mt-1 text-sm text-slate-600">Export filtered requests to a file.</p>
+                    <div class="mt-4 space-x-2">
+                        <a href="{{ path('app_admin_requests_export_sql', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800">Export as SQL</a>
+                        <a href="{{ path('app_admin_requests_export_csv', filters) }}" class="inline-flex items-center justify-center rounded-2xl bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Export as CSV</a>
+                    </div>
                 </div>
-            </div>
-            <div class="rounded-3xl bg-slate-50 p-5">
-                <h3 class="text-sm font-semibold text-slate-900">Import Requests</h3>
-                <p class="mt-1 text-sm text-slate-600">Import requests from a SQL file.</p>
-                <form action="{{ path('app_admin_requests_import_sql') }}" method="post" enctype="multipart/form-data" class="mt-4 flex items-center gap-2">
-                    <input type="hidden" name="_token" value="{{ csrf_token('import-sql-requests') }}">
-                    <input type="file" name="sqlFile" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-slate-700 hover:file:bg-slate-50"/>
-                    <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Import</button>
-                </form>
+                <div class="rounded-3xl bg-slate-50 p-5">
+                    <h3 class="text-sm font-semibold text-slate-900">Import Requests</h3>
+                    <p class="mt-1 text-sm text-slate-600">Import requests from a SQL file.</p>
+                    <form action="{{ path('app_admin_requests_import_sql') }}" method="post" enctype="multipart/form-data" class="mt-4 flex items-center gap-2">
+                        <input type="hidden" name="_token" value="{{ csrf_token('import-sql-requests') }}">
+                        <input type="file" name="sqlFile" required class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-white file:text-slate-700 hover:file:bg-slate-50"/>
+                        <button type="submit" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Import</button>
+                    </form>
+                </div>
             </div>
         </div>
 

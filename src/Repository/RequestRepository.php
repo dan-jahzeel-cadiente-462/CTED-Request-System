@@ -140,6 +140,16 @@ class RequestRepository extends ServiceEntityRepository
             ->getSingleScalarResult();
     }
 
+    public function countRequestsSince(\DateTimeImmutable $since): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->andWhere('r.time_in > :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function countStatuses(array $statuses): array
     {
         $results = $this->createQueryBuilder('r')
