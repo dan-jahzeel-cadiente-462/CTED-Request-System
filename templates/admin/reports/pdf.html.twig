@@ -1,41 +1,165 @@
-{% extends 'admin/base.html.twig' %}
-
-{% block admin_title %}Report PDF{% endblock %}
-
-{% block body %}
-    <div style="font-family: Arial, sans-serif; font-size: 12px; color: #1f2937;">
-        <!-- Logo Header in the center -->
-        <div style="text-align: center; margin-bottom: 16px;">
-            <img src="{{ asset('images/NORSU Logo.png') }}" alt="Logo" style="max-width: 160px; height: auto; display: block; margin: 0 auto;">
-            <h1 style="font-size: 22px; margin: 12px 0 0;">Request Report</h1>
-            <p style="margin: 6px 0 0; font-size: 12px; color: #6b7280;">Date: {{ date|date('F j, Y') }} | Generated: {{ generatedAt|date('F j, Y H:i') }}</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Request Report - {{ date ? date|date('F j, Y') : '' }}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: Times New Roman, serif;
+            font-size: 12px;
+            color: #1f2937;
+            background: #f3f4f6;
+            padding: 24px;
+        }
+        .report {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .report-header {
+            text-align: center;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 24px;
+            margin-bottom: 24px;
+        }
+        .report-header img {
+            max-width: auto;
+            height: 60px;
+            display: block;
+            margin: 0 auto 12px;
+        }
+        .report-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin: 8px 0 0;
+        }
+        .report-header p {
+            margin: 6px 0 0;
+            font-size: 12px;
+            color: #6b7280;
+        }
+        .report-meta {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #374151;
+        }
+        .report-meta strong { color: #111827; font-weight: 600; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        thead th {
+            text-align: left;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: .08em;
+            color: #6b7280;
+            border-bottom: 2px solid #d1d5db;
+            padding: 10px 8px;
+        }
+        tbody td {
+            padding: 2px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            color: #1f2937;
+        }
+        tbody tr:last-child td { border-bottom: none; }
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 9999px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #ffe4e6; color: #9f1239; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .empty {
+            text-align: center;
+            color: #6b7280;
+            padding: 32px 0;
+        }
+        .actions {
+            margin-top: 24px;
+            text-align: center;
+        }
+        .actions .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #111827;
+            color: #ffffff;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .actions .btn:hover { background: #1f2937; }
+        @media print {
+            body { background: #ffffff; padding: 0; }
+            .report { max-width: none; box-shadow: none; border-radius: 0; padding: 0; }
+            .actions { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="report">
+        <div class="report-header">
+<img src="{{ asset('images/NORSU header.png') }}" alt="NORSU Logo" height="100">
+            <h3>College of Teacher Education</h3>
+            <h1>Request Report</h1>
+            <p>Date: {{ date ? date|date('F j, Y') : 'N/A' }} &nbsp;|&nbsp; Generated: {{ generatedAt|date('F j, Y H:i') }}</p>
         </div>
 
-        <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse: collapse;">
+        <div class="report-meta">
+            <div><strong>Generated for:</strong> Daily Request Report</div>
+            <div><strong>Total requests:</strong> {{ requests|length }}</div>
+        </div>
+
+        <table>
             <thead>
                 <tr>
-                    <th align="left" style="border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;">Student</th>
-                    <th align="left" style="border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;">Program</th>
-                    <th align="left" style="border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;">Request Type</th>
-                    <th align="left" style="border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;">Status</th>
-                    <th align="left" style="border-bottom: 2px solid #d1d5db; text-transform: uppercase; font-size: 11px; letter-spacing: .08em;">Time in</th>
+                    <th>Student</th>
+                    <th>Program</th>
+                    <th>Request Type</th>
+                    <th>Status</th>
+                    <th>Time in</th>
                 </tr>
             </thead>
             <tbody>
                 {% for request in requests %}
                     <tr>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{ request.fullName }}</td>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{ request.program }}</td>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{ request.requestType }}</td>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{ request.status ?: 'Pending' }}</td>
-                        <td style="padding: 8px 0; border-bottom: 1px solid #e5e7eb;">{{ request.timeIn ? request.timeIn|date('g:i a') : '-' }}</td>
+                        <td>{{ request.fullName }}</td>
+                        <td>{{ request.program }}</td>
+                        <td>{{ request.requestType }}</td>
+                        <td>
+                            {% set status = request.status ?: 'Pending' %}
+                            <span class="status-badge {{
+                                status == 'Completed' ? 'status-completed' :
+                                (status == 'Cancelled' ? 'status-cancelled' : 'status-pending')
+                            }}">
+                                {{ status }}
+                            </span>
+                        </td>
+                        <td>{{ request.timeIn ? request.timeIn|date('g:i a') : '-' }}</td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="5" style="padding: 16px 0; text-align: center; color: #6b7280;">No requests found for this date.</td>
+                        <td colspan="5" class="empty">No requests found for this date.</td>
                     </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <div class="actions">
+            <button class="btn" onclick="window.print()">Print / Save as PDF</button>
+        </div>
     </div>
-{% endblock %}
+</body>
+</html>
